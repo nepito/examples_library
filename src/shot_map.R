@@ -58,16 +58,6 @@ hex_xy |>
   ) |>
   ungroup() |>
   ggplot() +
-  # geom_polygon(
-  #   aes(
-  #     x = x + edge_x,
-  #     y = y + edge_y,
-  #     group = stat,
-  #     color = rn
-  #   ),
-  #   size = 3,
-  #   fill = NA
-  # ) +
   geom_segment(
     aes(
       x = x + lag_edge_x,
@@ -84,7 +74,6 @@ hex_xy |>
 
 
 df_all_players <- read_csv("/workdir/tests/data/shots_match_bundesliga.csv", show_col_types = FALSE) |>
-  #  filter(situation != 'Penalty', !isOwnGoal) |>
   transmute(
     player_name = playerName,
     team_id = teamId,
@@ -155,8 +144,6 @@ team_logos <- df |>
     team_logo_url = sprintf("https://images.fotmob.com/image_resources/logo/teamlogo/%s.png", team_id)
   ) |>
   deframe()
-
-arw <- arrow(length = unit(3, "pt"), type = "closed")
 
 base <- df |>
   ggplot() +
