@@ -9,9 +9,9 @@ library(cowplot)
 library(magick)
 library(ggforce)
 
-dir_proj <- '61-sonofacorner_shotmap'
-sandpaper_background_color <- '#EFE9E6'
-font <- 'Titillium Web'
+dir_proj <- "61-sonofacorner_shotmap"
+sandpaper_background_color <- "#EFE9E6"
+font <- "Titillium Web"
 extrafont::loadfonts(quiet = TRUE)
 
 pitch_length <- ggsoccer::pitch_international$length
@@ -21,7 +21,7 @@ half_pitch_width <- pitch_width / 2
 
 x_buffer <- 8.5
 hex_width <- 4
-stats <- c('goals', 'xG', 'shots', 'xG/shot')
+stats <- c("goals", "xG", "shots", "xG/shot")
 ## Reference: https://github.com/gkaramanis/tidytuesday/blob/master/2020/2020-week36/crops.R
 base_hex_xy <- tibble(
   stat = stats,
@@ -29,7 +29,7 @@ base_hex_xy <- tibble(
   y = c(11, 23, 42, 54) - (hex_width / 2)
 )
 
-hex_xy <- base_hex_xy |> 
+hex_xy <- base_hex_xy |>
   rowwise() |>
   mutate(
     x = list(c(0, 0, !!hex_width, !!hex_width)),
@@ -40,23 +40,23 @@ hex_xy <- base_hex_xy |>
     edge_y_top = list(edge_y_bottom + !!hex_width),
     edge_x = list(c(edge_x_bottom[c(2, 1, 4)], edge_x_top[c(4, 3, 2)])),
     edge_y = list(c(edge_y_bottom[c(2, 1, 4)], edge_y_top[c(4, 3, 2)]))
-  )  |>
+  ) |>
   ungroup() |>
   unnest(c(edge_x, edge_y)) |>
-  select(-matches('iso[xy]_'), -c(x, y)) |>
+  select(-matches("iso[xy]_"), -c(x, y)) |>
   inner_join(
     base_hex_xy,
-    by = 'stat'
+    by = "stat"
   )
-arw <- arrow(length = unit(3, 'pt'), type = 'closed')
-hex_xy |> 
-  group_by(stat) |> 
+arw <- arrow(length = unit(3, "pt"), type = "closed")
+hex_xy |>
+  group_by(stat) |>
   mutate(
     rn = factor(row_number()),
     lag_edge_x = lag(edge_x),
     lag_edge_y = lag(edge_y)
-  ) |> 
-  ungroup() |> 
+  ) |>
+  ungroup() |>
   ggplot() +
   # geom_polygon(
   #   aes(
@@ -84,13 +84,13 @@ hex_xy |>
 
 
 df_all_players <- read_csv("/workdir/tests/data/shots_match_bundesliga.csv", show_col_types = FALSE) |>
-#  filter(situation != 'Penalty', !isOwnGoal) |> 
+  #  filter(situation != 'Penalty', !isOwnGoal) |>
   transmute(
     player_name = playerName,
     team_id = teamId,
     x, y,
     xG = expectedGoals,
-    goal = ifelse(eventType == 'Goal', 1L, 0L)
+    goal = ifelse(eventType == "Goal", 1L, 0L)
   )
 all_names <- df_all_players |>
   group_by(player_name) |>
@@ -99,68 +99,69 @@ all_names <- df_all_players |>
   pull(player_name)
 
 players_of_interest <- all_names[1:6]
-df <- df_all_players |> 
+df <- df_all_players |>
   filter(
     player_name %in% players_of_interest
-  ) |> 
+  ) |>
   mutate(
-    across(player_name, ~ordered(toupper(.x), levels = toupper(players_of_interest))),
+    across(player_name, ~ ordered(toupper(.x), levels = toupper(players_of_interest))),
     ## reflect about the middle of the goal
     across(
-      y, 
-      ~ifelse(
-        .x > half_pitch_width, 
-        half_pitch_width - (.x - half_pitch_width), 
-        half_pitch_width + (half_pitch_width - .x))
+      y,
+      ~ ifelse(
+        .x > half_pitch_width,
+        half_pitch_width - (.x - half_pitch_width),
+        half_pitch_width + (half_pitch_width - .x)
+      )
     )
   )
 
-agg <- df |> 
-  group_by(player_name) |> 
+agg <- df |>
+  group_by(player_name) |>
   summarize(
     shots = n(),
     xG = sum(xG),
     goals = sum(goal),
     median_x_yards = (18 / 16.5) * (105 - median(x))
-  ) |> 
-  ungroup() |> 
+  ) |>
+  ungroup() |>
   mutate(
     `xG/shot` = xG / shots
   )
 
-agg_xy <- agg |> 
+agg_xy <- agg |>
   pivot_longer(
     -c(player_name),
-    names_to = 'stat',
-    values_to = 'value'
-  ) |> 
-  filter(stat %in% !!stats) |> 
+    names_to = "stat",
+    values_to = "value"
+  ) |>
+  filter(stat %in% !!stats) |>
   mutate(
     value_lab = ifelse(
-      stat %in% c('shots', 'goals'),
+      stat %in% c("shots", "goals"),
       value,
-      sprintf('%.2f', value)
+      sprintf("%.2f", value)
     )
-  ) |> 
+  ) |>
   inner_join(
     base_hex_xy,
-    by = 'stat'
+    by = "stat"
   )
 
-team_logos <- df |> 
-  distinct(player_name, team_id) |> 
+team_logos <- df |>
+  distinct(player_name, team_id) |>
   transmute(
     player_name,
-    team_logo_url = sprintf('https://images.fotmob.com/image_resources/logo/teamlogo/%s.png', team_id)
-  ) |> 
+    team_logo_url = sprintf("https://images.fotmob.com/image_resources/logo/teamlogo/%s.png", team_id)
+  ) |>
   deframe()
 
-arw <- arrow(length = unit(3, 'pt'), type = 'closed')
+arw <- arrow(length = unit(3, "pt"), type = "closed")
 
-base <- df |> 
+base <- df |>
   ggplot() +
   aes(x = x, y = y) +
-  facet_wrap(~player_name,  scales = 'fixed') +
+  facet_wrap(~player_name, scales = "fixed") +
   ## Plot hexes first so that they in the background
   geom_hex(
     aes(x = x, y = y, fill = ..density.., group = player_name),
@@ -170,7 +171,7 @@ base <- df |>
   ) +
   ggsoccer::annotate_pitch(
     dimensions = ggsoccer::pitch_international,
-    colour = 'black',
+    colour = "black",
     fill = NA
   ) +
   coord_flip(
@@ -180,19 +181,19 @@ base <- df |>
   theme_minimal() +
   theme(
     text = element_text(family = font),
-    title = element_text(color = 'black'),
-    plot.title = element_text(size = 40, face = 'bold', hjust = 0.5),
-    plot.title.position = 'plot',
-    plot.subtitle = element_text(size = 14, color = '#4E616C', hjust = 0.5),
+    title = element_text(color = "black"),
+    plot.title = element_text(size = 40, face = "bold", hjust = 0.5),
+    plot.title.position = "plot",
+    plot.subtitle = element_text(size = 14, color = "#4E616C", hjust = 0.5),
     plot.margin = margin(20, 20, 20, 20),
     plot.background = element_rect(fill = sandpaper_background_color, color = sandpaper_background_color),
     panel.background = element_rect(fill = sandpaper_background_color, color = sandpaper_background_color),
-    strip.text = element_text(size = 14, color = 'black', face = 'bold'),
+    strip.text = element_text(size = 14, color = "black", face = "bold"),
     axis.ticks = element_blank(),
     axis.text = element_blank(),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.spacing.y = unit(2, 'lines') ## more spacing between facet rows
+    panel.spacing.y = unit(2, "lines") ## more spacing between facet rows
   ) +
   labs(
     title = "Goleadores de la Serie A",
@@ -214,8 +215,8 @@ base <- df |>
     pattern_alpha = 0.2,
     pattern_spacing = 0.01,
     pattern_size = 0.05,
-    pattern = 'pch',
-    colour = 'black',
+    pattern = "pch",
+    colour = "black",
     size = 1
   ) +
   ## the 4 stat labels
@@ -231,7 +232,7 @@ base <- df |>
   ## the 4 stat label values
   geom_text(
     inherit.aes = FALSE,
-    fontface = 'bold',
+    fontface = "bold",
     family = font,
     size = 12 / .pt,
     vjust = 0.5,
@@ -241,45 +242,45 @@ base <- df |>
   ) +
   ggforce::geom_arc(
     inherit.aes = FALSE,
-    color = 'red',
-    linetype = '31',
+    color = "red",
+    linetype = "31",
     size = 1,
     data = agg |> select(player_name, median_x_yards),
     aes(
-      x0 = pitch_length, 
-      y0 = half_pitch_width, 
-      r = median_x_yards, 
+      x0 = pitch_length,
+      y0 = half_pitch_width,
+      r = median_x_yards,
       start = pi,
       end = 2 * pi
     )
   ) +
   geom_text(
     hjust = 1,
-    color = 'red',
+    color = "red",
     size = 8 / .pt,
     family = font,
     data = agg |> select(player_name, median_x_yards),
     aes(
       x = pitch_length + 3,
       y = half_pitch_width - median_x_yards,
-      label = sprintf('%.1f yds.', median_x_yards)
+      label = sprintf("%.1f yds.", median_x_yards)
     )
   ) +
   geom_text(
     inherit.aes = FALSE,
     hjust = 0,
-    color = 'red',
+    color = "red",
     size = 8 / .pt,
     family = font,
     data = agg |> select(player_name),
     aes(
       x = pitch_length + 3,
       y = half_pitch_width + 6,
-      label = 'median distance'
+      label = "median distance"
     )
   ) +
   geom_segment(
-    color = 'red',
+    color = "red",
     data = agg |> select(player_name, median_x_yards),
     arrow = arw,
     aes(
@@ -292,22 +293,22 @@ base <- df |>
 
 ## Need to rescale the hex fills to be relative to each player
 gb_base <- ggplot_build(base)
-gb_base$data[[1]] <- gb_base$data[[1]] |> 
-  group_by(PANEL) |> 
+gb_base$data[[1]] <- gb_base$data[[1]] |>
+  group_by(PANEL) |>
   mutate(
     rn = dense_rank(count),
     max_rn = max(rn)
-  ) |> 
-  ungroup() |> 
+  ) |>
+  ungroup() |>
   ## colors are first, middle, and last from sonofacorner
   mutate(
-    fill = map2_chr(rn, max_rn, ~colorRampPalette(c('#d0d6d4', '#287271'))(..2)[[..1]])
+    fill = map2_chr(rn, max_rn, ~ colorRampPalette(c("#d0d6d4", "#287271"))(..2)[[..1]])
   )
 gt_base <- ggplot_gtable(gb_base)
 
 ## Add team logos to facet strip text
 ## Reference: https://github.com/ajreinhard/data-viz/blob/master/ggplot/plot_SB.R
-grob_strip_index <- which(sapply(gt_base$grob, function(x) x$name) == 'strip')
+grob_strip_index <- which(sapply(gt_base$grob, function(x) x$name) == "strip")
 facet_ids <- sapply(grob_strip_index, function(grb) {
   gt_base$grobs[[grb]]$grobs[[1]]$children[[2]]$children[[1]]$label
 })
@@ -315,23 +316,23 @@ facet_ids <- sapply(grob_strip_index, function(grb) {
 for (i in 1:length(facet_ids)) {
   player_name <- facet_ids[i]
   team_logo_url <- team_logos[[player_name]]
-  
+
   lab <- grid::textGrob(
     player_name,
     gp = grid::gpar(
-      col = 'black',
+      col = "black",
       fontfamily = font,
-      fontface = 'bold',
+      fontface = "bold",
       fontsize = 11
     ),
     hjust = 0.5
   )
-  
+
   raw_img <- magick::image_read(team_logo_url)
-  bw_img <- magick::image_quantize(raw_img, colorspace = 'gray')
+  bw_img <- magick::image_quantize(raw_img, colorspace = "gray")
   img <- grid::rasterGrob(
     image = bw_img,
-    x = unit(0.9, 'npc'),
+    x = unit(0.9, "npc"),
     vp = grid::viewport(height = 1, width = 1)
   )
   tot_tree <- grid::grobTree(lab, img)
@@ -342,8 +343,8 @@ polished <- cowplot::ggdraw(gt_base)
 
 ggsave(
   plot = polished,
-  filename = file.path(dir_proj, 'liga-mx.png'),
+  filename = file.path(dir_proj, "liga-mx.png"),
   width = 14,
   height = 8,
-  units = 'in'
+  units = "in"
 )
