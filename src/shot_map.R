@@ -73,7 +73,7 @@ hex_xy |>
   )
 
 
-df_all_players <- read_csv("/workdir/tests/data/shots_match_bundesliga.csv", show_col_types = FALSE) |>
+df_all_players <- read_csv("/workdir/tests/data/liga_mx_shoters.csv", show_col_types = FALSE) |>
   transmute(
     player_name = playerName,
     team_id = teamId,
@@ -183,8 +183,8 @@ base <- df |>
     panel.spacing.y = unit(2, "lines") ## more spacing between facet rows
   ) +
   labs(
-    title = "Goleadores de la Serie A",
-    subtitle = "Top 6 de goleo | Serie A 2023/2024 | Tomado del código de @TonyElHabr",
+    title = "Goleadores de la Liga MX",
+    subtitle = "Top 6 de goleo | Apertura 2024/2025 | Tomado del código de @TonyElHabr",
     y = NULL,
     x = NULL
   ) +
