@@ -71,5 +71,5 @@ Por último les presento la figura de Tony. Este no es un módulo, pero es un gr
 Tony hace una figura inspirado en _Son of corner_. Aquí podrás ver el código [`sonofacorner_shotmap`](https://github.com/tonyelhabr/sports_viz/tree/master/61-sonofacorner_shotmap). Nosotros lo único que hicimos fue actualizar los datos.
 
 ### La figura
-![Caption for the picture.](61-sonofacorner_shotmap/liga-mx.png)
+![Mapa de disparo. Inspirado en _Son of corner_.](61-sonofacorner_shotmap/liga-mx.png)
 
