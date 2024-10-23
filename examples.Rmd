@@ -1,0 +1,75 @@
+---
+title: "Ejemplos de librerías"
+output: pdf_document
+date: "2024-10-23"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggshakeR)
+library(understatr)
+library(StatsBombR)
+```
+## Introducción
+Aquí vamos a presentar el ejemplo del uso de tres librerías:\
+1. [`understatr`](https://github.com/ewenme/understatr)\
+2. [`ggshakeR`](https://abhiamishra.github.io/ggshakeR/index.html)\
+3. [`StatsBombR`](https://github.com/statsbomb/StatsBombR)\
+
+Además, les recomendamos revisar otras dos librerías:\
+- [`worldfootballR`](https://github.com/JaseZiv/worldfootballR)\
+- [`ggsoccer`](https://torvaney.github.io/ggsoccer/)\
+La primera librería es para descargar datos. La segunda es para hacer graficado de pases y tiros.
+
+El código de este reporte lo encontrarás en el repo [`examples_library`](https://github.com/nepito/examples_library).
+
+## Gráfica de los tiros a gol
+### Datos de disparos a gol
+Podemos descargar los datos con la paquetería [`understatr`](https://github.com/ewenme/understatr).
+
+Podemos descarga los datos de Raúl Jiménez utilizando la función `understatr::get_player_shots()`:
+``` {r data_raul, message = FALSE}
+shot_data <- understatr::get_player_shots(player_id = 4105)
+```
+### Gráfica de la densidad de disparos a gol
+Para graficar la densidad de tiros lo hacemos con la función `ggshakeR::plot_shot()`:
+``` {r plot_raul, message = FALSE}
+ggshakeR::plot_shot(shot_data, highlight_goals = TRUE, average_location = FALSE)
+```
+
+## Gráfica de la red de los pases
+### Datos de pases
+Utilizamos los datos [gratiutos de StatsBomb](https://statsbomb.com/what-we-do/hub/free-data/) y los descargamos con la paquetería [`StatsBombR`](https://github.com/statsbomb/StatsBombR).
+```{r StatsBombR_data, message = FALSE}
+Comp <- FreeCompetitions() %>%
+  filter(competition_id == "9" & season_id == "281")
+Matches <- FreeMatches(Comp)
+StatsbombData <- free_allevents(MatchesDF = Matches, Parallel = T)
+plotting_data <- allclean(StatsbombData) |>
+  rename(
+    "x" = "location.x",
+    "y" = "location.y",
+    "finalX" = "pass.end_location.x",
+    "finalY" = "pass.end_location.y"
+  )
+```
+### Graficado de la red de pases
+La red de pases lo podemos hacer con la librería [`ggshakeR`](https://abhiamishra.github.io/ggshakeR/index.html). Utilizamos la función `ggshakeR::plot_passnet()`:
+``` {r plot_net_pass, message = FALSE}
+match_leverkusen_leipzig <- 3895052
+
+passnetPlot <- plotting_data |>
+  filter(match_id == match_leverkusen_leipzig) |>
+  plot_passnet(team_name = "Bayer Leverkusen")
+
+ggsave("bayer_leverkusen_netpass.png")
+```
+
+
+## Shot map de _Son of corner_
+Por último les presento la figura de Tony. Este no es un módulo, pero es un graficado muy bonito, creemos que vale la pena compartirlo.
+Tony hace una figura inspirado en _Son of corner_. Aquí podrás ver el código [`sonofacorner_shotmap`](https://github.com/tonyelhabr/sports_viz/tree/master/61-sonofacorner_shotmap). Nosotros lo único que hicimos fue actualizar los datos.
+
+### La figura
+![Caption for the picture.](61-sonofacorner_shotmap/liga-mx.png)
+
