@@ -1,0 +1,37 @@
+---
+title: "Aplicación Shiny"
+output: pdf_document
+date: "2024-10-24"
+---
+
+## Introducción
+Aquí vamos a presentar el ejemplo del uso de tres librerías:\
+1. [`bslib`](https://rstudio.github.io/bslib/)\
+2. [`crosstalk`](https://rstudio.github.io/crosstalk/)\
+3. [`plotly`](https://plotly.com/r/)\
+
+
+El código de este reporte lo encontrarás en el repo [`subjective_effort_assessment_questionnaire`](https://github.com/nepito/subjective_effort_assessment_questionnaire). En el siguiente [enlace](http://104.248.109.197:4040/) podrás encontrar la aplicación.
+
+
+### `bslib`
+
+`bslib` es una librería de R diseñada para facilitar la creación de interfaces de usuario (UI) atractivas y personalizables en aplicaciones Shiny y documentos R Markdown. Se basa en el popular framework Bootstrap, lo que te permite aprovechar una amplia gama de componentes y estilos predefinidos para construir aplicaciones web de alta calidad.
+
+Nosotros lo utilizamos las funciones `bslib::layout_sidebar()`, `bslib::page_fillable()`, `bslib::card()` y `bslib::card_header()`. La función `bslib::layout_sidebar()` es la que nos permite dividir verticalmente la pantalla y poder esconder el menú de selección. `bslib::page_fillable()` es la función principal de la función **UI**. `bslib::card()` nos ayuda a separar horizontalmente. Es decir, la figura de dispersión es un panel y el histograma otro panel. Con `bslib::card_header()` agregamos los tículos **Respuesta por jugador** y **Respuesta por día**.
+
+![Captura de pantalla de la aplicación. En los recuadros verdes podemos var un botón para esconder el menú. Este botón es configurado utilizando `bslib`.](screen_shot_2.png)
+
+### `crosstalk`
+
+`crosstalk` es una poderosa herramienta en R que facilita la creación de visualizaciones interactivas y dinámicas. `crosstalk` es muy útil cuando trabajamos con grandes conjuntos de datos. Permite vincular múltiples gráficos de manera que al seleccionar un elemento en uno, los demás se actualizan automáticamente. `crosstalk` ofrece una experiencia de exploración de datos mucho más rica e intuitiva.
+
+![Captura de pantalla de la aplicación. En los recuadros verdes podemos var el menú para seleccionar a los jugadores y la fecha. Este menú es configurado utilizando `crosstalk`.](screen_shot.png)
+
+Nostros utilizamos la función `crosstalk::filter_select()`. Esta función nos ayudó a hacer el filtrado por fecha y por jugador sin tener que usar la función `dplyr::filter()`. 
+
+### `plotly`
+
+`plotly` es una biblioteca de visualización de datos de código abierto. Esta librería permite crear gráficos interactivos y de alta calidad en una amplia variedad de lenguajes de programación, incluyendo Python, R, JavaScript, MATLAB y más.
+
+`plot_ly()` y `add_histogram()` nos ayudó a hacer los dos firguras. Estas figuras son dinámicas. Tiene un botón para descargar las figuras. También, si pasamos el cursor por las figuras nos muestra los valores.
